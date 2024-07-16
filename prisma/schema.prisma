@@ -12,3 +12,147 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  logs      Logs[]
+}
+
+model Customer {
+  id        Int    @id @default(autoincrement())
+  firstname String
+  lastname  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addresses  Address?
+  emails     Email?
+  phones     Phone?
+  vehicles   Vehicle?
+  workOrders WorkOrder?
+}
+
+model Email {
+  id Int @id @default(autoincrement())
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  Customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId Int       @unique
+}
+
+model Phone {
+  id         Int       @id @default(autoincrement())
+  prefix     String
+  number     String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  Customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId Int       @unique
+}
+
+model Address {
+  id         Int      @id @default(autoincrement())
+  street     String
+  number     String
+  city       String
+  state      String
+  country    String
+  zip        String
+  isCurrent  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  customerId Int
+  customer   Customer @relation(fields: [customerId], references: [id])
+}
+
+enum AddressType {
+  BILLING
+  HOME
+}
+
+model WorkOrder {
+  id Int @id @default(autoincrement())
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  Customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId Int       @unique
+  parts      Part[]
+  Services   Service[]
+}
+
+model Vehicle {
+  id                Int             @id @default(autoincrement())
+  make              String
+  model             String
+  vin               String
+  vrm               String
+  refrigerant       RefrigerantType
+  // Gas and oil amounts are always calculated in grams Europe or Ounces in USA.
+  // We'll be using grams for easier calculations
+  refrigerantAmount Int             @default(0)
+  oilAmount         Int             @default(10)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  Customer          Customer?       @relation(fields: [customerId], references: [id])
+  customerId        Int             @unique
+  Parts             Part[]
+  Services          Service[]
+}
+
+enum RefrigerantType {
+  R134A
+  R1234YF
+}
+
+model Part {
+  id    Int      @id @default(autoincrement())
+  name  String
+  price Int
+  unit  UnitType
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Vehicle     Vehicle?   @relation(fields: [vehicleId], references: [id])
+  vehicleId   Int
+  WorkOrders  WorkOrder? @relation(fields: [workOrderId], references: [id])
+  workOrderId Int
+}
+
+model Service {
+  id    Int    @id @default(autoincrement())
+  name  String
+  price Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Vehicle     Vehicle?   @relation(fields: [vehicleId], references: [id])
+  vehicleId   Int
+  WorkOrders  WorkOrder? @relation(fields: [workOrderId], references: [id])
+  workOrderId Int
+}
+
+enum UnitType {
+  GRAM
+  LITER
+  ITEM
+  PACK
+}
+
+model Logs {
+  id        Int      @id @default(autoincrement())
+  action    String
+  path      String
+  createdAt DateTime @default(now())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+}
