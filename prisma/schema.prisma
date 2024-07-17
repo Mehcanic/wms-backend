@@ -31,61 +31,76 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  addresses  Address?
-  emails     Email?
-  phones     Phone?
-  vehicles   Vehicle?
-  workOrders WorkOrder?
+  addresses  Address[]
+  emails     Email[]
+  phones     Phone[]
+  vehicles   Vehicle[]
+  workOrders WorkOrder[]
 }
 
 model Email {
-  id Int @id @default(autoincrement())
-
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  Customer   Customer? @relation(fields: [customerId], references: [id])
-  customerId Int       @unique
+  id         Int      @id @default(autoincrement())
+  address    String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  Customer   Customer @relation(fields: [customerId], references: [id])
+  customerId Int
 }
 
 model Phone {
-  id         Int       @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   prefix     String
-  number     String
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  Customer   Customer? @relation(fields: [customerId], references: [id])
-  customerId Int       @unique
+  number     String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  Customer   Customer @relation(fields: [customerId], references: [id])
+  customerId Int
 }
 
 model Address {
-  id         Int      @id @default(autoincrement())
+  id         Int         @id @default(autoincrement())
   street     String
   number     String
   city       String
   state      String
   country    String
   zip        String
-  isCurrent  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  type       AddressType
+  isCurrent  Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
   customerId Int
-  customer   Customer @relation(fields: [customerId], references: [id])
+  customer   Customer    @relation(fields: [customerId], references: [id])
 }
 
 enum AddressType {
   BILLING
   HOME
+  WORK
+  OTHER
 }
 
 model WorkOrder {
-  id Int @id @default(autoincrement())
+  id         Int             @id @default(autoincrement())
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @default(now())
+  customerId Int
+  customer   Customer        @relation(fields: [customerId], references: [id])
+  items      WorkOrderItem[]
+  Vehicle    Vehicle?        @relation(fields: [vehicleId], references: [id])
+  vehicleId  Int?
+}
 
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  Customer   Customer? @relation(fields: [customerId], references: [id])
-  customerId Int       @unique
-  parts      Part[]
-  Services   Service[]
+model WorkOrderItem {
+  id          Int       @id @default(autoincrement())
+  isService   Boolean
+  name        String
+  price       Int
+  unit        UnitType
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  workOrderId Int
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
 }
 
 model Vehicle {
@@ -101,44 +116,14 @@ model Vehicle {
   oilAmount         Int             @default(10)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
-  Customer          Customer?       @relation(fields: [customerId], references: [id])
-  customerId        Int             @unique
-  Parts             Part[]
-  Services          Service[]
+  Customer          Customer        @relation(fields: [customerId], references: [id])
+  customerId        Int
+  workOrders        WorkOrder[]
 }
 
 enum RefrigerantType {
   R134A
   R1234YF
-}
-
-model Part {
-  id    Int      @id @default(autoincrement())
-  name  String
-  price Int
-  unit  UnitType
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  Vehicle     Vehicle?   @relation(fields: [vehicleId], references: [id])
-  vehicleId   Int
-  WorkOrders  WorkOrder? @relation(fields: [workOrderId], references: [id])
-  workOrderId Int
-}
-
-model Service {
-  id    Int    @id @default(autoincrement())
-  name  String
-  price Int
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  Vehicle     Vehicle?   @relation(fields: [vehicleId], references: [id])
-  vehicleId   Int
-  WorkOrders  WorkOrder? @relation(fields: [workOrderId], references: [id])
-  workOrderId Int
 }
 
 enum UnitType {
