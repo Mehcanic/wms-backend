@@ -11,6 +11,7 @@ import logsRoutes from "./routes/logsRoutes";
 import userRoutes from "./routes/userRoutes";
 import vehicleRoutes from "./routes/vehicleRoutes";
 import workOrderRoutes from "./routes/workOrderRoutes";
+import authenticationRoutes from "./routes/authenticationRoutes";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use("/api/v1", logsRoutes);
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", vehicleRoutes);
 app.use("/api/v1", workOrderRoutes);
+app.use('/api/v1', authenticationRoutes);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);

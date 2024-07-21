@@ -14,13 +14,14 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  email     String   @unique
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  email     String    @unique
   password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   logs      Logs[]
+  address   Address[]
 }
 
 model Customer {
@@ -71,6 +72,8 @@ model Address {
   updatedAt  DateTime    @updatedAt
   customerId Int
   customer   Customer    @relation(fields: [customerId], references: [id])
+  User       User        @relation(fields: [userId], references: [id])
+  userId     Int
 }
 
 enum AddressType {
@@ -81,7 +84,10 @@ enum AddressType {
 }
 
 model WorkOrder {
-  id         Int             @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
+  orderNumber String      @unique
+  status      OrderStatus
+
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @default(now())
   customerId Int
@@ -89,6 +95,13 @@ model WorkOrder {
   items      WorkOrderItem[]
   Vehicle    Vehicle?        @relation(fields: [vehicleId], references: [id])
   vehicleId  Int?
+}
+
+enum OrderStatus {
+  AWAITING_START
+  IN_PROGRESS
+  FINISHED
+  CANCELLED
 }
 
 model WorkOrderItem {
@@ -103,34 +116,24 @@ model WorkOrderItem {
   workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
 }
 
-model Vehicle {
-  id                Int             @id @default(autoincrement())
-  make              String
-  model             String
-  vin               String
-  vrm               String
-  refrigerant       RefrigerantType
-  // Gas and oil amounts are always calculated in grams Europe or Ounces in USA.
-  // We'll be using grams for easier calculations
-  refrigerantAmount Int             @default(0)
-  oilAmount         Int             @default(10)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  Customer          Customer        @relation(fields: [customerId], references: [id])
-  customerId        Int
-  workOrders        WorkOrder[]
-}
-
-enum RefrigerantType {
-  R134A
-  R1234YF
-}
-
 enum UnitType {
   GRAM
   LITER
   ITEM
   PACK
+}
+
+model Vehicle {
+  id         Int         @id @default(autoincrement())
+  make       String
+  model      String
+  vin        String
+  vrm        String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  Customer   Customer    @relation(fields: [customerId], references: [id])
+  customerId Int
+  workOrders WorkOrder[]
 }
 
 model Logs {
